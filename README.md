@@ -1,7 +1,5 @@
 ## 介绍
-利用mailslurp(app.mailslurp.com) 提供的api做的匿名邮件收取bot.默认收取最新的邮件,后续考虑支持自定义邮件接受设置.
-mailslurp的token放置于 `./config/list`下
-利用mailslurp(app.mailslurp.com) 提供的api做的匿名邮件收取bot.默认收取最新的邮件,后续考虑支持自定义邮件接受设置.      
+利用mailslurp(app.mailslurp.com) 提供的api做的匿名邮件收取bot.支持多个匿名邮箱的邮件收取      
 友情提示:bot支持serverless部署,例如laf/cf云函数
 
 **.env配置示范**
