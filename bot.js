@@ -1,8 +1,10 @@
 require('dotenv').config()
 const MailSlurp = require('mailslurp-client').default;
+require('dotenv').config();
 const fs = require('fs');
 const { Telegraf, Markup } = require('telegraf')
 const { message } = require('telegraf/filters');
+const cheerio = require('cheerio'); 
 // const { callback } = require('telegraf/typings/button');
 
 // const { callback } = require('telegraf/typings/button');
@@ -10,18 +12,28 @@ const { message } = require('telegraf/filters');
 
 
 const apiFile = './config/list';
+// console.log(process.env.MAILKEY,process.env.TGTOKEN);
+const keys = process.env.MAILKEY.split(",");
+
 
 const bot = new Telegraf(process.env.TGTOKEN)
 
 async function readmail_address(apiKey) {
     // create a client
-    
+
     const mailslurp = new MailSlurp({ apiKey });
-
+    let addresses = [];
     // create an inbox
-    const inbox = await mailslurp.inboxController.createInbox({});
+    let inbox_count = await mailslurp.inboxController.getInboxCount();
+    if (inbox_count.totalElements < 1) {
+        await mailslurp.createInbox();
+    }
+    let page_inboxes = await mailslurp.inboxController.getAllInboxes(0,20);
 
-    return inbox.emailAddress;
+    page_inboxes.content.forEach((ele) => {
+        addresses.push(ele.emailAddress)
+    })
+    return addresses;
     // expect(inbox.emailAddress).toContain('@mailslurp');
 }
 
@@ -30,18 +42,33 @@ async function receive_mail(key) {
     // create a client
     try {
         const mailslurp = new MailSlurp({ apiKey: key});
+        // doc: https://mailslurp.github.io/mailslurp-client/classes/EmailControllerApi.html#getLatestEmail
 
-    // create an inbox
-        const { id: inboxId } = await mailslurp.createInbox();
-        const inbox = await mailslurp.getInbox(inboxId);
-        const email = await mailslurp.waitForLatestEmail(inbox.id)
-        // const latestEmail =  await mailslurp.emailController.getEmail({emailId:email.id});
-        return email.body;
+        const inbox = await mailslurp.inboxController.getAllInboxes(0,20);
+        const email = await mailslurp.emailController.getLatestEmail(inbox);
+        const $ = cheerio.load(email.body);
+        const body = $('body').text();
+        const from = email.from;
+        const to = email.to;
+        let mail_content = `from: ${from} \n to: ${to} \n${body}`
+        // console.log(mail_content);
+        return mail_content;
     } catch(e) {
         const statusCode = e.status;
         const errorMessage = await e.text;
+        console.log(errorMessage);
         return errorMessage;
     }
+}
+
+
+async function create_inbox(apikey) {
+    const mailslurp = new MailSlurp({ apiKey:apikey });
+    // create an inbox
+    await mailslurp.createInbox();
+
+    let inbox_count = await mailslurp.inboxController.getInboxCount();
+    return inbox_count.totalElements;
 }
 
 async function read_keys() {
@@ -51,40 +78,31 @@ async function read_keys() {
             return [];
         }
     })
-
 }
-
-
-
-
 bot.start(async(ctx) => {
     ctx.reply('Welcome');
 });
-
-bot.telegram.getMe().then((botInfo) => {bot.options.username = botInfo.username});
-
 bot.command('address', async (ctx) => {
     try {
         let addresses = [];
-        let keys = await read_keys();
-        keys = keys.split(/\r?\n/);
         for (const key of keys) {
-            const address = await readmail_address(key);
-            addresses.push(`${address}\n`);
+            const inbox_addresses = await readmail_address(key);
+            let index = keys.indexOf(key);
+            await ctx.reply(`Account id is : ${index}:\n${inbox_addresses}`);
         }       
-        await ctx.reply(`${addresses}`);
+        // await ctx.reply(`${addresses}`);
 
     } catch(e) {
         console.log(e);
     }
 });
-
 bot.command('receive', async (ctx) => {
     try {
         let email = ctx.update.message.text.split(' ')[1];
         if (email === undefined ) {
             ctx.reply(`Please set receive email address! current is: ${email}`)
         }
+
         await ctx.reply(`test ${email}`);
 
     } catch(e) {
@@ -93,31 +111,45 @@ bot.command('receive', async (ctx) => {
 });
 
 
-bot.command('receive_all', async (ctx) => {
-    try {
-        let keys = await read_keys();
-        let mails = [];
-        keys = keys.split(/\r?\n/);
-        for (const key of keys) {
-            const mail = await receive_mail(key);
-            mails.push(`${mail}\n`);
-        }
-        ctx.reply(`Test:\n ${mails}`);
 
+bot.command('get', async (ctx) => {
+    try {
+        let account_id = ctx.update.message.text.split(' ')[1];
+        if (account_id ===undefined) {
+            for (const key of keys) {
+                const mail = await receive_mail(key);
+                ctx.replyWithHTML(mail);
+            }
+        } else if (account_id < keys.length) {
+            key = keys[account_id];
+            const mail = await receive_mail(key);
+            ctx.replyWithHTML(mail);
+        } else {
+            ctx.reply('error! 请选择正确的account id!');
+        }
+        
     } catch(e) {
         console.log(e);
     }
 });
-// bot.help( async(ctx)=> {
-//     let commands =  await ctx.getMyCommands();
-//     console.log(commands);
-//     let value = "Here's the list of commands i know:\n";
-//     commands.forEach(cmd => {
-//         value += `/${cmd.command} - ${cmd.description}\n`;
-//     })
-//     ctx.inlineQuery;
-//     ctx.reply(value);
-// })
+
+bot.command('create', async(ctx) => {
+    try {
+        let account_id = ctx.update.message.text.split(' ')[1];
+        if (account_id ===undefined) 
+        {
+            ctx.reply('error! 请选择正确的account id! /create {account index}');
+        } else if (account_id < keys.length)  {
+            let inbox_num = await create_inbox(keys[account_id]);
+            ctx.reply(`第${account_id}用户创建邮箱成功! 现在有${inbox_num}个匿名邮箱(/address查看全部用户下邮箱)`);
+        } else {
+            ctx.reply('error! 请选择正确的account id!');
+        }
+
+    } catch(e) {
+        console.log(e);
+    }
+})
 
 bot.on(message('sticker'), (ctx) => ctx.reply('👍'));
 bot.launch();
