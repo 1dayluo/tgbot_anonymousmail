@@ -5,6 +5,7 @@ const fs = require('fs');
 const { Telegraf, Markup } = require('telegraf')
 const { message } = require('telegraf/filters');
 const cheerio = require('cheerio'); 
+
 // const { callback } = require('telegraf/typings/button');
 
 // const { callback } = require('telegraf/typings/button');
@@ -151,8 +152,27 @@ bot.command('create', async(ctx) => {
     }
 })
 
-bot.on(message('sticker'), (ctx) => ctx.reply('👍'));
-bot.launch();
+bot.on(message('sticker'), (ctx) => ctx.reply('meow~'));
+
+
+if(process.env.environment == "PRODUCTION"){
+    bot.launch({
+      webhook:{
+          domain: process.env.DOMAIN,// Your domain URL (where server code will be deployed)
+          port: process.env.PORT || 8000
+      }
+    }).then(() => {
+      console.info(`The bot ${bot.botInfo.username} is running on server`);
+    });
+  } else { // if local use Long-polling
+    bot.launch().then(() => {
+      console.info(`The bot ${bot.botInfo.username} is running locally`);
+    });
+}
+
+
+// bot.launch();
+
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))

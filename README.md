@@ -1,13 +1,18 @@
 ## 介绍
-利用mailslurp(app.mailslurp.com) 提供的api做的匿名邮件收取bot.默认收取最新的邮件,后续考虑支持自定义邮件接受设置.
-mailslurp的token放置于 `./config/list`下
+
 利用mailslurp(app.mailslurp.com) 提供的api做的匿名邮件收取bot.默认收取最新的邮件,后续考虑支持自定义邮件接受设置.      
-友情提示:bot支持serverless部署,例如laf/cf云函数
+bot本地debug采用polling模式,webhooke则部署在cf worker上(参考&感谢提供的思路和解决方案:https://github.com/Tsuk1ko/cfworker-middleware-telegraf )
 
 **.env配置示范**
 ```
-TGTOKEN={tg-token} #tg bot的token
-MAILKEY={mail-key1,mail-key2} #放置mailslurp的api key.用","分隔
+{
+    
+    TGTOKEN={your-tg-bot-token}
+    MAILKEY=key1,key2
+    DOMAIN={cf-worker-domain}
+    UUID={your-uuid-path}
+    environment={DEV-or-PRODUCTION}
+}
 ```
 
 **tg 机器人命令**:
