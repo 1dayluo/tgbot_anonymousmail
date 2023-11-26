@@ -44,21 +44,26 @@ async function receive_mail(key) {
     try {
         const mailslurp = new MailSlurp({ apiKey: key});
         // doc: https://mailslurp.github.io/mailslurp-client/classes/EmailControllerApi.html#getLatestEmail
-
         const inbox = await mailslurp.inboxController.getAllInboxes(0,20);
-        const email = await mailslurp.emailController.getLatestEmail(inbox);
-        const $ = cheerio.load(email.body);
-        const body = $('body').text();
-        const from = email.from;
-        const to = email.to;
-        let mail_content = `from: ${from} \n to: ${to} \n${body}`
+        const unread = await mailslurp.emailController.getUnreadEmailCount(inbox);
+        if(unread.count != 0) {
+            const email = await mailslurp.emailController.getLatestEmail(inbox);
+
+            const $ = cheerio.load(email.body);
+            const body = $('body').text();
+            const from = email.from;
+            const to = email.to;
+            mail_content = `from: ${from} \n to: ${to} \n${body}` ;
+            return mail_content;
+        } else {
+            return 'No email received!';
+        }
         // console.log(mail_content);
-        return mail_content;
+        
     } catch(e) {
         const statusCode = e.status;
         const errorMessage = await e.text;
-        console.log(errorMessage);
-        return errorMessage;
+        return 'error!';
     }
 }
 

@@ -4,6 +4,7 @@
 bot本地debug采用polling模式,webhooke则部署在cf worker上(参考&感谢提供的思路和解决方案:https://github.com/Tsuk1ko/cfworker-middleware-telegraf )
 
 **.env配置示范**
+本地部署参考
 ```
 {
     
@@ -24,6 +25,8 @@ bot本地debug采用polling模式,webhooke则部署在cf worker上(参考&感谢
 
 
 其他:    
-没什么,我就想配个图
+
+本地测试/debug就用`src/bot.js.`
+如果是部署cf的话,则用webpack打包,将bot代码置于`index.js`下,打包命令:`npx webpack -c webpack.config.js`
 
 ![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFjdx9jkbSl2GgtwjLgtdFh0docG5V_WZHcg34Xa9zSrkc4AsmLR5lyE-FHoZUNRqyvzM&usqp=CAU)    
