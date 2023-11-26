@@ -162,13 +162,22 @@ bot.on(message('sticker'), (ctx) => ctx.reply('meow~'));
 
 if(process.env.environment == "PRODUCTION"){
     bot.launch({
-      webhook:{
-          domain: process.env.DOMAIN,// Your domain URL (where server code will be deployed)
-          port: process.env.PORT || 8000
-      }
-    }).then(() => {
-      console.info(`The bot ${bot.botInfo.username} is running on server`);
-    });
+        webhook: {
+          // Public domain for webhook; e.g.: example.com
+          domain: process.env.TESTDOMAIN,
+      
+          // Port to listen on; e.g.: 8080
+          port:  process.env.TESTPORT,
+      
+          // Optional path to listen for.
+          // `bot.secretPathComponent()` will be used by default
+          path: process.env.UUID,
+      
+          // Optional secret to be sent back in a header for security.
+          // e.g.: `crypto.randomBytes(64).toString("hex")`
+          secretToken: randomAlphaNumericString,
+        },
+      });
   } else { // if local use Long-polling
     bot.launch().then(() => {
       console.info(`The bot ${bot.botInfo.username} is running locally`);

@@ -1,25 +1,27 @@
 {
   "name": "tg-mailbot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "bot.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "version": "2.0.1",
+  "description": "利用mailslurp(app.mailslurp.com) 提供的api做的匿名邮件收取bot.默认收取最新的邮件,后续考虑支持自定义邮件接受设置.       bot本地debug采用polling模式,webhooke则部署在cf worker上(参考&感谢提供的思路和解决方案:https://github.com/Tsuk1ko/cfworker-middleware-telegraf )",
+  "main": "index.js",
+  "private": true,
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack -c webpack.config.js"
+  },
   "dependencies": {
     "@cfworker/web": "^1.14.0",
     "cfworker-middleware-telegraf": "^2.0.2",
+    "cfworker-middware-telegraf": "^2.0.0",
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.3.1",
+    "http": "^0.0.1-security",
     "mailslurp-client": "^15.17.4",
-    "node-telegram-bot-api": "^0.64.0",
     "telegraf": "^4.15.0"
   },
   "devDependencies": {
     "node-polyfill-webpack-plugin": "^2.0.1",
-    "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
   }
 }
