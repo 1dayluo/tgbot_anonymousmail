@@ -1,11 +1,12 @@
 /*
  * @Author: 1dayluo
  * @Date: 2023-11-26 15:39:18
- * @LastEditTime: 2023-11-26 16:56:10
+ * @LastEditTime: 2023-11-26 19:18:28
  */
 
 const { Application, Router } = require('@cfworker/web');
-const { createTelegrafMiddware }= require('cfworker-middware-telegraf');
+
+const createTelegrafMiddleware = require('cfworker-middleware-telegraf');
 require('dotenv').config()
 const MailSlurp = require('mailslurp-client').default;
 require('dotenv').config();
@@ -22,10 +23,10 @@ const cheerio = require('cheerio');
 
 const apiFile = './config/list';
 // console.log(process.env.MAILKEY,process.env.TGTOKEN);
-const keys = MAILKEY?MAILKEY:process.env.MAILKEY.split(",");
+const keys = MAILKEY?MAILKEY.split(","):process.env.MAILKEY.split(",");
 
 
-const bot = TGTOKEN?TGTOKEN:new Telegraf(process.env.TGTOKEN)
+const bot = TGTOKEN?new Telegraf(TGTOKEN):new Telegraf(process.env.TGTOKEN)
 
 async function readmail_address(apiKey) {
     // create a client
@@ -93,9 +94,7 @@ async function read_keys() {
         }
     })
 }
-bot.start(async(ctx) => {
-    ctx.reply('Welcome');
-});
+
 bot.command('address', async (ctx) => {
     try {
         let addresses = [];
@@ -174,6 +173,6 @@ const router = new Router();
 const uuid =UUID?UUID:process.env.UUID
 // `/SECRET_PATH` 指的是一个不容易猜到的路径，以防止他人访问你的 webhook
 // 可以滚键盘或者用 UUID 之类的生成，例如 '/d4507ff0-08d1-4160-bad8-1addf587374a'
-router.post(`/${uuid}`, createTelegrafMiddware(bot));
+router.post(`/${uuid}`, createTelegrafMiddleware(bot));
 
 new Application().use(router.middleware).listen();
