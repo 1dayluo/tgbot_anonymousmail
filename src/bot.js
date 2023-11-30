@@ -2,9 +2,11 @@ require('dotenv').config()
 const MailSlurp = require('mailslurp-client').default;
 require('dotenv').config();
 const fs = require('fs');
-const { Telegraf, Markup } = require('telegraf')
+const { Telegraf, Markup, Input } = require('telegraf')
 const { message } = require('telegraf/filters');
+const ncp = require('copy-paste')
 const cheerio = require('cheerio'); 
+// const { callback } = require('telegraf/typings/button');
 
 // const { callback } = require('telegraf/typings/button');
 
@@ -86,15 +88,47 @@ async function read_keys() {
     })
 }
 bot.start(async(ctx) => {
-    ctx.reply('Welcome');
+    ctx.reply('喵呜~~ ');
+    let img_addr = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGtEsCLSPQaRJP9lunzN2N2uO10hS5uUpodw&usqp=CAU';
+    await ctx.replyWithPhoto(
+        Input.fromURLStream(img_addr, 'kitten.jpg')
+      )
+
+    
 });
+
+
+
+
+  
+ bot.on('callback_query', async (ctx) => {
+    const selectedOption =   ctx.callbackQuery.data;
+    await ctx.reply(`您选择了：${selectedOption}`);
+  });
+  
+
+
+
+
+
 bot.command('address', async (ctx) => {
     try {
         let addresses = [];
         for (const key of keys) {
             const inbox_addresses = await readmail_address(key);
             let index = keys.indexOf(key);
-            await ctx.reply(`Account id is : ${index}:\n${inbox_addresses}`);
+            let return_Addr = [];
+            var options = inbox_addresses.map(
+                x => ({ text: x, callback_data: x })
+            );
+            // const keyboard = Markup.inlineKeyboard(options2);
+
+            const keyboard = {
+                inline_keyboard: [options],
+              };
+            
+            await ctx.replyWithMarkdownV2(`Account id is : ${index}:`, {reply_markup: keyboard});
+            // await ctx.reply(`Account id is : ${index}:\n${inbox_addresses}`);
         }       
         // await ctx.reply(`${addresses}`);
 
@@ -102,6 +136,9 @@ bot.command('address', async (ctx) => {
         console.log(e);
     }
 });
+
+
+
 bot.command('receive', async (ctx) => {
     try {
         let email = ctx.update.message.text.split(' ')[1];
