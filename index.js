@@ -1,7 +1,7 @@
 /*
  * @Author: 1dayluo
  * @Date: 2023-11-26 15:39:18
- * @LastEditTime: 2023-12-01 00:02:06
+ * @LastEditTime: 2023-12-01 00:24:53
  */
 
 const { Application, Router } = require('@cfworker/web');
@@ -77,15 +77,6 @@ async function receive_mail(key) {
 }
 
 
-bot.start(async(ctx) => {
-    ctx.reply('喵呜~~ ');
-    let img_addr = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGtEsCLSPQaRJP9lunzN2N2uO10hS5uUpodw&usqp=CAU';
-    await ctx.replyWithPhoto(
-        Input.fromURLStream(img_addr, 'kitten.jpg')
-      )
-
-    
-});
 
 
 async function create_inbox(apikey) {
