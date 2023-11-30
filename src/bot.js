@@ -101,7 +101,7 @@ bot.start(async(ctx) => {
 
 
   
- bot.on('callback_query', async (ctx) => {
+bot.on('callback_query', async (ctx) => {
     const selectedOption =   ctx.callbackQuery.data;
     await ctx.reply(`您选择了：${selectedOption}`);
   });
